@@ -78,13 +78,3 @@ def run(program, in_val):
             break
         else:
             raise ValueError(f"Unrecognised op code {op_code}")
-
-
-def main():
-    with open("program.txt") as f:
-        program = list(map(int, f.readline().split(",")))
-    run(program, 1)
-
-
-if __name__ == "__main__":
-    main()
