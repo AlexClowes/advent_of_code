@@ -1,13 +1,5 @@
-def get_digits(n):
-    digits = []
-    while n > 0:
-        digits.append(n % 10)
-        n //= 10
-    return digits[::-1]
-
-
 def is_valid(n):
-    digits = get_digits(n)
+    digits = list(map(int, str(n)))
     return (
         all(d1 <= d2 for d1, d2 in zip(digits, digits[1:]))
         and any(d1 == d2 for d1, d2 in zip(digits, digits[1:]))
