@@ -1,14 +1,4 @@
-from fractions import Fraction
-
 import numpy as np
-
-
-def sgn(x):
-    if x > 0:
-        return 1
-    if x < 0:
-        return -1
-    return 0
 
 
 def visible_asteroids(asteroid_map, point):
@@ -16,10 +6,7 @@ def visible_asteroids(asteroid_map, point):
     for i in range(asteroid_map.shape[0]):
         for j in range(asteroid_map.shape[1]):
             if asteroid_map[i, j] and (i, j) != point:
-                rel_pos = (i - point[0], j - point[1])
-                sign = tuple(map(sgn, rel_pos))
-                grad = Fraction(*rel_pos) if rel_pos[1] != 0 else float("inf")
-                visible.add((sign, grad))
+                visible.add(np.arctan2(i - point[0], j - point[1]))
     return len(visible)
 
 
