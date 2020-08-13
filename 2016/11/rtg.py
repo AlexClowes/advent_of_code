@@ -30,8 +30,8 @@ def main():
             continue
         prev_states.add(hashable_state)
         if all(not items[floor] for floor in (1, 2, 3)):
-            print(n_moves)
-            return
+            ret = n_moves
+            break
         for next_lift_pos in (lift_pos - 1, lift_pos + 1):
             if next_lift_pos in (0, 5):
                 continue
@@ -44,6 +44,10 @@ def main():
                     new_items[lift_pos] = left_behind
                     new_items[next_lift_pos] = with_cargo
                     q.append((n_moves + 1, next_lift_pos, new_items))
+
+    print(ret)
+    # Adding two extra pairs on floor 1 costs 24 extra moves
+    print(ret + 24)
 
 
 if __name__ == "__main__":
