@@ -18,19 +18,25 @@ def print_state(state):
 @numba.njit
 def update(state):
     # Try to expand flowing water
-    for i in range(state.shape[0] - 1):
-        for j in range(state.shape[1]):
-            if state[i, j] == FLOWING_WATER:
-                # Try to go down
-                if state[i + 1, j] == EMPTY:
-                    state[i + 1, j] = FLOWING_WATER
+    q = list(zip(*np.where(state[:-1] == FLOWING_WATER)))
+    imax = state.shape[0] - 2
+    while q:
+        i, j = q.pop()
+        if i > imax:
+            continue
+        # Try to go down
+        if state[i + 1, j] == EMPTY:
+            state[i + 1, j] = FLOWING_WATER
+            q.append((i + 1, j))
 
-                # Try to go left / right
-                if state[i + 1, j] in (CLAY, STILL_WATER):
-                    if state[i, j - 1] == EMPTY:
-                        state[i, j - 1] = FLOWING_WATER
-                    if state[i, j + 1] == EMPTY:
-                        state[i, j + 1] = FLOWING_WATER
+        # Try to go left / right
+        if state[i + 1, j] in (CLAY, STILL_WATER):
+            if state[i, j - 1] == EMPTY:
+                state[i, j - 1] = FLOWING_WATER
+                q.append((i, j - 1))
+            if state[i, j + 1] == EMPTY:
+                state[i, j + 1] = FLOWING_WATER
+                q.append((i, j + 1))
 
     # Any trapped flowing water becomes still water
     for i in range(state.shape[0] - 2, -1, -1):
@@ -61,14 +67,12 @@ def main():
     xmax = max(x for (x, y) in clay)
     ymin = min(y for (x, y) in clay)
     ymax = max(y for (x, y) in clay)
-
     state = np.zeros((ymax - ymin + 1, xmax - xmin + 3), dtype=int)
     for x, y in clay:
         state[y - ymin, x - xmin + 1] = CLAY
-
     state[0, 500 - xmin + 1] = FLOWING_WATER
 
-    old_water_count = -1
+    old_water_count = None
     while True:
         update(state)
         water_count = np.sum((state == FLOWING_WATER) | (state == STILL_WATER))
