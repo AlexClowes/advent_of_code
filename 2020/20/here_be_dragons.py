@@ -1,4 +1,4 @@
-from itertools import chain, product
+from collections import deque
 import re
 
 import numpy as np
@@ -50,6 +50,7 @@ def get_bounds(grid):
 def build_image(tiles):
     # Start by choosing an arbitrary tile and placing it at position (0, 0)
     grid = {(0, 0): tiles.popitem()[1]}
+    possible_positions = deque(adj(0, 0))
 
     def fits(tile, i, j):
         return (
@@ -60,12 +61,13 @@ def build_image(tiles):
         )
 
     # Keep going until every tile has been placed somewhere in the grid
-    while tiles:
-        possible_positions = set(chain.from_iterable(adj(*p) for p in grid))
-        for (tile_id, tile), pos in product(tiles.items(), possible_positions):
+    while tiles and possible_positions:
+        pos = possible_positions.popleft()
+        for (tile_id, tile) in tiles.items():
             if any(fits(permuted_tile, *pos) for permuted_tile in permute(tile)):
                 grid[pos] = tile
                 tiles.pop(tile_id)
+                possible_positions.extend(filter(lambda p: p not in grid, adj(*pos)))
                 break
 
     # Build single large array from tiles

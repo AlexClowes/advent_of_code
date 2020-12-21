@@ -1,4 +1,4 @@
-from itertools import chain, product
+from collections import deque
 import re
 
 import numpy as np
@@ -47,6 +47,7 @@ def adj(i, j):
 def build_image(tiles):
     # Start by choosing an arbitrary tile and placing it at position (0, 0)
     image = {(0, 0): tiles.pop()}
+    possible_positions = deque(adj(0, 0))
 
     def fits(tile, i, j):
         return (
@@ -57,12 +58,13 @@ def build_image(tiles):
         )
 
     # Keep going until every tile has been placed somewhere in the image
-    while tiles:
-        possible_positions = set(chain.from_iterable(adj(*p) for p in image))
-        for tile, pos in product(tiles, possible_positions):
+    while tiles and possible_positions:
+        pos = possible_positions.popleft()
+        for tile in tiles:
             if any(fits(permuted_tile, *pos) for permuted_tile in permutations(tile)):
                 image[pos] = tile
                 tiles.remove(tile)
+                possible_positions.extend(filter(lambda p: p not in image, adj(*pos)))
                 break
     return image
 
