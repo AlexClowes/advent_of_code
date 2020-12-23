@@ -6,6 +6,9 @@ def try_int(x):
 
 
 def main():
+    # Rules are represented as a tuple where each element is an option.
+    # Options are represented as tuples, where each element is an int
+    # (corresponding to a rule) or a character (always "a" or "b" in this case).
     with open("rules_messages.txt") as f:
         rules = {}
         while (line := f.readline()) != "\n":
@@ -17,33 +20,38 @@ def main():
 
         messages = [line.strip() for line in f]
 
-    def recurse(rule, message):
-        # Base case
-        if not rule and not message:
-            return True, None
-        if (rule and not message) or (not rule and message):
-            return False, None
-
-        for option in rule:
-            match = True
-            pos = 0
-            for element in option:
-                if element == "a" or element == "b":
-                    match = element == message[pos]
-                    pos_inc = 1
-                else:
-                    match, pos_inc = recurse(rules[element], message[pos:])
-                if not match:
-                    break
-                pos += pos_inc
+    def match_option(option, message):
+        """Yield all pos s.t. option matches message[:pos]"""
+        if option:
+            if not message:
+                return
+            rule = option[0]
+            if isinstance(rule, str):
+                if rule == message[0]:
+                    yield 1
+            elif isinstance(rule, int):
+                for pos in match_rule(rules[rule], message):
+                    for pos_inc in match_option(option[1:], message[pos:]):
+                        yield pos + pos_inc
             else:
-                break
-        return match, pos
+                raise ValueError(f"Unable to interpret rule {rule} in option {option}")
+        else:
+            yield 0
+
+    def match_rule(rule, message):
+        """Yield all pos s.t. rule matches message[:pos]"""
+        for option in rule:
+            yield from match_option(option, message)
 
     def match(message):
-        match, length = recurse(rules[0], message)
-        return match and length == len(message)
+        return any(length == len(message) for length in match_rule(rules[0], message))
 
+    # Part 1
+    print(sum(map(match, messages)))
+
+    # Part 2
+    rules[8] = ((42,), (42, 8))
+    rules[11] = ((42, 31), (42, 11, 31))
     print(sum(map(match, messages)))
 
 
