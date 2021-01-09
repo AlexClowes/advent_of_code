@@ -42,7 +42,11 @@ class Cube:
 
 def dist(point1, point2):
     """Manhattan distance between two points"""
-    return sum(abs(x1 - x2) for x1, x2 in zip(point1, point2))
+    return (
+        abs(point1[0] - point2[0])
+        + abs(point1[1] - point2[1])
+        + abs(point1[2] - point2[2])
+    )
 
 
 class Octahedron:
@@ -94,8 +98,9 @@ def intersect(cube, octahedron):
     )
 
 
-def find_central_point(nanobots):
-    max_in_range = 0
+def find_central_point(nanobots, initial_guess=None):
+    max_in_range = sum(initial_guess in bot for bot in nanobots) if initial_guess else 0
+    central_point = initial_guess
     q = [(get_bounding_cube(nanobots), nanobots)]
     while q:
         cube, nanobots = q.pop()
@@ -119,7 +124,14 @@ def main():
         for line in f:
             x, y, z, r = map(int, re.findall(r"-?\d+", line))
             nanobots.append(Octahedron(Point(x, y, z), r))
-    print(sum(find_central_point(nanobots)))
+
+    # Use mean position of bots as initial guess
+    initial_guess = Point(
+        sum(bot.point.x for bot in nanobots) / len(nanobots),
+        sum(bot.point.y for bot in nanobots) / len(nanobots),
+        sum(bot.point.z for bot in nanobots) / len(nanobots),
+    )
+    print(sum(find_central_point(nanobots, initial_guess)))
 
 
 if __name__ == "__main__":
