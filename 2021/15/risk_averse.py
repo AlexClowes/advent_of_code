@@ -17,20 +17,17 @@ def low_risk_path(risk):
     start = (0, 0)
     end = (risk.shape[0] - 1, risk.shape[1] - 1)
 
-    def dist(i, j):
-        return abs(i - end[0]) + abs(j - end[1])
-
     seen = set()
-    q = [(0, dist(*start), start)]
+    q = [(0, start)]
     while q:
-        total_risk, _, pos = heapq.heappop(q)
+        total_risk, pos = heapq.heappop(q)
         if pos in seen:
             continue
         seen.add(pos)
         if pos == end:
             return total_risk
         for new_pos in adj(*pos):
-            heapq.heappush(q, (total_risk + risk[new_pos], dist(*new_pos), new_pos))
+            heapq.heappush(q, (total_risk + risk[new_pos], new_pos))
 
 
 def embiggen_risk(risk):
